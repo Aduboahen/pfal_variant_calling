@@ -5,7 +5,7 @@ nextflow.enable.dsl=1
 // parameters to pass to command lineage
 
 params.reads       = "$baseDir/*_{1,2}.fastq"
-reference          = "$baseDir/ref/plasmod_falc.fasta"
+reference          = "$baseDir/reference/Pf3D7.fasta"
 sampleName         = "$params.sampleName"
 vcf2table          = "$baseDir/scripts/vcf2table.py"
 parse_stats        = "$baseDir/scripts/parse_stats.py"
@@ -25,7 +25,7 @@ codeBase  : "$baseDir"
 sample    : "$params.sampleName"
 reads     : "$params.reads"
 outDir    : "$params.outDir"
-reference : "$baseDir/ref/plasmod_falc.fasta"
+reference : "$baseDir/reference/Pf3D7.fasta"
 """
 
 // Clean reads (adapter and read length filter)
