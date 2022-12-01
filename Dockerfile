@@ -18,7 +18,7 @@ RUN conda update --all && \
     conda config --add channels bioconda && \
     conda config --add channels conda-forge && \
     conda config --add channels anaconda && \
-    conda create -n PFAL_RES nextflow samtools bcftools bwa picard bedtools mosdepth snpEff fastp
+    conda create -n PFAL_RES nextflow samtools bcftools bwa picard bedtools mosdepth snpEff fastp ucscfacount
 
 ## activate conda env
 RUN echo "source activate PFAL_RES" > ~/.bashrc
