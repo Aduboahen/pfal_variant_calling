@@ -22,6 +22,6 @@ docker pull mugicrow/pfal_variant_call:latest
 
 nextflow run pf.resistance.nf --sampleid test --reads "./input/test_{1,2}.fastq.gz" --outDir ./output -resume
 
-## batch script
+## batch run
 
 ./script/run_batch.sh
