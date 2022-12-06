@@ -1,0 +1,8 @@
+Dec-05 13:12:01.622 [main] DEBUG nextflow.cli.Launcher - $> nextflow run -resume -name pfal pf.resistance.nf --sampleName test --outDir ./output -with-docker 'mugicrow/pfal_variant_call:latest'
+Dec-05 13:12:01.724 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.04.3
+Dec-05 13:12:01.794 [main] DEBUG nextflow.cli.Launcher - Operation aborted
+nextflow.exception.AbortOperationException: Cannot find script file: pf.resistance.nf
+	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:414)
+	at nextflow.cli.CmdRun.run(CmdRun.groovy:287)
+	at nextflow.cli.Launcher.run(Launcher.groovy:480)
+	at nextflow.cli.Launcher.main(Launcher.groovy:639)
