@@ -6,12 +6,12 @@ nextflow.enable.dsl=1
 
 params.reads       = "$baseDir/test_fq/test_{1,2}.fastq.gz"
 reference          = "$baseDir/reference/Pf3D7.fasta"
-sampleid         = "$params.sampleid"
+sampleid           = "$params.sampleid"
 vcf2table          = "$baseDir/scripts/vcf2table.py"
 parse_stats        = "$baseDir/scripts/parse_stats.py"
 outDir             = "$params.outDir"
 params.threads     = 2 
-threads          = "$params.threads"
+threads            = "$params.threads"
 // channel to get reads as tuples
 
 Channel
@@ -26,7 +26,7 @@ sample    : "$params.sampleid"
 reads     : "$params.reads"
 outDir    : "$params.outDir"
 reference : "$baseDir/reference/Pf3D7.fasta"
-threads   : "$params.thread"
+threads   : "$params.threads"
 """
 
 // Clean reads (adapter and read length filter)
