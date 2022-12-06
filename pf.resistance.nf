@@ -4,13 +4,13 @@ nextflow.enable.dsl=1
 
 // parameters to pass to command lineage
 
-params.reads       = "$baseDir/*_{1,2}.fastq"
+params.reads       = "$baseDir/test_fq/test_{1,2}.fastq.gz"
 reference          = "$baseDir/reference/Pf3D7.fasta"
-sampleName         = "$params.sampleName"
+sampleid         = "$params.sampleid"
 vcf2table          = "$baseDir/scripts/vcf2table.py"
 parse_stats        = "$baseDir/scripts/parse_stats.py"
 outDir             = "$params.outDir"
-params.threads     =  6
+params.threads     = 2 
 threads          = "$params.threads"
 // channel to get reads as tuples
 
@@ -22,10 +22,11 @@ Channel
 log.info"""
 
 codeBase  : "$baseDir"
-sample    : "$params.sampleName"
+sample    : "$params.sampleid"
 reads     : "$params.reads"
 outDir    : "$params.outDir"
 reference : "$baseDir/reference/Pf3D7.fasta"
+threads   : "$params.thread"
 """
 
 // Clean reads (adapter and read length filter)
@@ -36,16 +37,16 @@ process 'clean reads' {
       set pairID, file(reads) from reads_ch
     output:
       set file("${reads[0].baseName}_fastp.fastq.gz"), file("${reads[1].baseName}_fastp.fastq.gz") into fastp_2A
-      file "${sampleName}_fastpmerged.fastq.gz" into fastpmerged_2A
-      file "${sampleName}.fastp.json"
+      file "${sampleid}_fastpmerged.fastq.gz" into fastpmerged_2A
+      file "${sampleid}.fastp.json"
     script:
     """
       fastp -i ${reads[0]} -I ${reads[1]} \
       -o ${reads[0].baseName}_fastp.fastq.gz -O ${reads[1].baseName}_fastp.fastq.gz \
-      --merge --merged_out ${sampleName}_fastpmerged.fastq.gz \
+      --merge --merged_out ${sampleid}_fastpmerged.fastq.gz \
       --overlap_diff_limit 0 \
       --trim_poly_x --trim_poly_g --length_required 100 --thread ${threads} --detect_adapter_for_pe\
-      --json ${sampleName}.fastp.json --html ${sampleName}.fastp.html
+      --json ${sampleid}.fastp.json --html ${sampleid}.fastp.html
     """
 }
 
@@ -58,17 +59,17 @@ process mapping {
       set file(trimmed1), file(trimmed2) from fastp_2A
       file fastpmerged from fastpmerged_2A
     output:
-      file ("${sampleName}.bam")  into bam1A
-      file ("${sampleName}.stats")
+      file ("${sampleid}.bam")  into bam1A
+      file ("${sampleid}.stats")
     script:
     """
-      bwa mem -M -k 10 -t ${threads} ${reference} ${fastpmerged} | samtools sort -T temp -O bam -o ${sampleName}.long.bam
-      bwa mem -M -k 10 -t ${threads} ${reference} ${trimmed1} ${trimmed2} | samtools sort -T temp -O bam -o ${sampleName}.short.bam
+      bwa mem -M -k 10 -t ${threads} ${reference} ${fastpmerged} | samtools sort -T temp -O bam -o ${sampleid}.long.bam
+      bwa mem -M -k 10 -t ${threads} ${reference} ${trimmed1} ${trimmed2} | samtools sort -T temp -O bam -o ${sampleid}.short.bam
 
-      samtools merge ${sampleName}.merged.bam ${sampleName}.long.bam ${sampleName}.short.bam
-      samtools sort ${sampleName}.merged.bam -@ ${threads} -o ${sampleName}.bam
-      samtools index ${sampleName}.bam
-      samtools stats ${sampleName}.bam > ${sampleName}.stats
+      samtools merge ${sampleid}.merged.bam ${sampleid}.long.bam ${sampleid}.short.bam
+      samtools sort ${sampleid}.merged.bam -@ ${threads} -o ${sampleid}.bam
+      samtools index ${sampleid}.bam
+      samtools stats ${sampleid}.bam > ${sampleid}.stats
     """
 }
 
@@ -80,14 +81,14 @@ process "mark duplicates"{
     input:
       file bam from bam1A
     output:
-      file ("${sampleName}.markdup.bam") into (bamDepth, bamVar)//, bamNonCov)
-      file ("${sampleName}.markdup.stats")
-      file ("${sampleName}.markdup.bam.bai") into bam_index
+      file ("${sampleid}.markdup.bam") into (bamDepth, bamVar)//, bamNonCov)
+      file ("${sampleid}.markdup.stats")
+      file ("${sampleid}.markdup.bam.bai") into bam_index
     script:
     """
-      picard MarkDuplicates -I ${bam} -O ${sampleName}.markdup.bam -M ${sampleName}.metrics.txt
-      samtools index ${sampleName}.markdup.bam > ${sampleName}.markdup.bam.bai
-      samtools stats ${sampleName}.markdup.bam > ${sampleName}.markdup.stats
+      picard MarkDuplicates -I ${bam} -O ${sampleid}.markdup.bam -M ${sampleid}.metrics.txt
+      samtools index ${sampleid}.markdup.bam > ${sampleid}.markdup.bam.bai
+      samtools stats ${sampleid}.markdup.bam > ${sampleid}.markdup.stats
     """
 }
 
@@ -102,7 +103,7 @@ process 'genome depth' {
       file "*"
     script:
     """
-      mosdepth --threads $threads ${sampleName} ${bam}
+      mosdepth --threads $threads ${sampleid} ${bam}
     """
 }
 
@@ -114,13 +115,13 @@ process "variant calling"{
     input:
       file bam from bamVar
     output:
-      file ("${sampleName}.vcf") into vcfFilter
+      file ("${sampleid}.vcf") into vcfFilter
     script:
     """
       bcftools mpileup -a DP -B -O u -m 4 -f \
       ${reference} ${bam}\
       | bcftools call -mv -O v -o \
-      ${sampleName}.vcf
+      ${sampleid}.vcf
     """
 }
 
@@ -130,9 +131,9 @@ process "filter variants"{
     input:
       file vcf from vcfFilter
     output:
-      //file ("${sampleName}.filtered.vcf") into (vcfCon)//,vcfNonCov
-      file ("${sampleName}.filtered_DP.vcf") into vcfCon
-      file ("${sampleName}.renamed.vcf") into vcfAnnot
+      //file ("${sampleid}.filtered.vcf") into (vcfCon)//,vcfNonCov
+      file ("${sampleid}.filtered_DP.vcf") into vcfCon
+      file ("${sampleid}.renamed.vcf") into vcfAnnot
     script:
     """
       bcftools filter -i 'type="snp"\
@@ -142,8 +143,8 @@ process "filter variants"{
       && DP4[2]/(DP4[2]+DP4[0])>=0.80\
       && DP4[3]/(DP4[3]+DP4[1])>=0.80'\
       -g10 -G10 \
-      ${sampleName}.vcf \
-      -o ${sampleName}.filtered_DP.vcf
+      ${sampleid}.vcf \
+      -o ${sampleid}.filtered_DP.vcf
 
       sed 's/Pf3D7_01_v3/1/g;\
       s/Pf3D7_02_v3/2/g; \
@@ -159,12 +160,12 @@ process "filter variants"{
       s/Pf3D7_12_v3/12/g; \
       s/Pf3D7_13_v3/13/g; \
       s/Pf3D7_14_v3/14/g' \
-      ${sampleName}.filtered_DP.vcf \
-      > ${sampleName}.renamed.vcf
+      ${sampleid}.filtered_DP.vcf \
+      > ${sampleid}.renamed.vcf
 
       sed -i '/Pf3D7_API_v3/d;\
       /Pf3D7_MIT_v3/d'\
-      ${sampleName}.renamed.vcf
+      ${sampleid}.renamed.vcf
     """
 }
 /*
@@ -174,8 +175,8 @@ bcftools filter -i 'type="snp" \
 && DP4[2]/(DP4[2]+DP4[0])>=0.80\
 && DP4[3]/(DP4[3]+DP4[1])>=0.80'\
 -g10 -G10\
-${sampleName}.vcf \
--o ${sampleName}.filtered.vcf
+${sampleid}.vcf \
+-o ${sampleid}.filtered.vcf
 
 
 
@@ -186,13 +187,13 @@ process 'non covered regions'{
       file bam from bamNonCov
       file vcf from vcfNonCov
     output:
-      file("${sampleName}_noncov.bed") into noncov
+      file("${sampleid}_noncov.bed") into noncov
     script:
     """
       bedtools genomecov -ibam ${bam} -bga | \
       awk '\$4 < 5' | \
       awk '{{print(\$1 \"\\t\" \$2 + 1 \"\\t\" \$3 \"\\tlow_coverage\")}}' |\
-      bedtools subtract -a - -b ${vcf} > ${sampleName}_noncov.bed
+      bedtools subtract -a - -b ${vcf} > ${sampleid}_noncov.bed
     """
 }
 */
@@ -202,23 +203,23 @@ process 'non covered regions'{
 process 'annotation'{
     tag '4A'
     publishDir outDir + "/annotation", mode: 'copy'
-    publishDir outDir + '/QC', mode: 'copy', pattern: "${sampleName}.snpEff.csv"
+    publishDir outDir + '/QC', mode: 'copy', pattern: "${sampleid}.snpEff.csv"
     input:
       file vcf from vcfAnnot
     output:
-      file ("${sampleName}.snpEff.csv")
-      file ("${sampleName}.summary.html")
-      file ("${sampleName}.snpEff.genes.txt")
-      file ("${sampleName}.annot.table.txt")
-      file ("${sampleName}.snpEff.ann.vcf")
+      file ("${sampleid}.snpEff.csv")
+      file ("${sampleid}.summary.html")
+      file ("${sampleid}.snpEff.genes.txt")
+      file ("${sampleid}.annot.table.txt")
+      file ("${sampleid}.snpEff.ann.vcf")
     script:
     """
       snpEff ann -v -noShiftHgvs -ud 0 -strict -hgvs1LetterAa -s \
-      ${sampleName}.summary.html Plasmodium_falciparum\
-      -csvStats ${sampleName}.snpEff.csv ${vcf} > ${sampleName}.snpEff.ann.vcf
+      ${sampleid}.summary.html Plasmodium_falciparum\
+      -csvStats ${sampleid}.snpEff.csv ${vcf} > ${sampleid}.snpEff.ann.vcf
 
-      ${vcf2table} ${sampleName}.snpEff.ann.vcf --sample ${sampleName} -ad -e -o\
-      ${sampleName}.annot.table.txt
+      ${vcf2table} ${sampleid}.snpEff.ann.vcf --sample ${sampleid} -ad -e -o\
+      ${sampleid}.annot.table.txt
     """
 }
 
@@ -230,19 +231,19 @@ process "consensus"{
     	file vcf from vcfCon
       //file noncov from noncov
     output:
-    	file("${sampleName}.consensus.fasta") into consensus
+    	file("${sampleid}.consensus.fasta") into consensus
     script:
       """
-    	bcftools view -O z -o ${sampleName}.vcf.gz ${vcf}
+    	bcftools view -O z -o ${sampleid}.vcf.gz ${vcf}
 
-    	bcftools index ${sampleName}.vcf.gz
+    	bcftools index ${sampleid}.vcf.gz
 
     	bcftools consensus -f ${reference}\
       --mark-snv lc\
       --mark-del -\
-      ${sampleName}.vcf.gz  > ${sampleName}.consensus.fasta
+      ${sampleid}.vcf.gz  > ${sampleid}.consensus.fasta
 
-    	sed -i 's/>Pf3D7/>${sampleName}/;s/_v3/''/g' ${sampleName}.consensus.fasta
+    	sed -i 's/>Pf3D7/>${sampleid}/;s/_v3/''/g' ${sampleid}.consensus.fasta
     	"""
 }
 
@@ -255,10 +256,10 @@ process 'genome_stats' {
     input:
         file consensus from consensus
     output:
-        file ("${sampleName}.stats.txt")
+        file ("${sampleid}.stats.txt")
     script:
         """
-        faCount ${consensus} > ${sampleName}.stats.txt
-        $parse_stats --stats ${sampleName}.stats.txt
+        faCount ${consensus} > ${sampleid}.stats.txt
+        $parse_stats --stats ${sampleid}.stats.txt
         """
 }
