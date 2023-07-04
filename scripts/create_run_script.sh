@@ -6,17 +6,10 @@
 
 today=$(date +"%d-%B-%y")
 
-#echo '#\!/bin/bash \n' > run_script_bs.sh
-
-for read in ${PWD}/nput/*_1* 
+for read in ${PWD}/input/*_1* 
 do
-	sample=$(basename ${read} _1.fastq.gz)
-	echo " 
-	nextflow run pf.resistance.nf \
-	       	--sampleid ${sample} \
-		--outDir ${PWD}/output/${today} \ 
-		--reads \"${PWD}/input/${sample}_{1,2}.fastq.gz\" \
-	      	-resume" >> run_script_bs.sh
+	sampleid=$(basename ${read} _1.fastq.gz)
+	echo "nextflow run pf.resistance.nf	--sampleid ${sampleid} --outDir ${PWD}/output/${today} --reads \"${PWD}/input/${sampleid}_{1,2}.fastq.gz\" -resume" >> run_script.sh
 done
 
 chmod +x run_script_bs.sh
