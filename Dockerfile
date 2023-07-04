@@ -5,7 +5,7 @@ USER $MAMBA_USER
 # install tools
 RUN micromamba install -n base -c bioconda -c conda-forge -y \
  python=3.9 \
- nextflow \
+ nextflow=22.04.3 \
  samtools \
  bcftools \
  bwa \
@@ -17,8 +17,10 @@ RUN micromamba install -n base -c bioconda -c conda-forge -y \
  ucsc-facount \
  pandas \
  vcfpy \
- pysam
+ pysam \
+ multiqc \
+ vim \
 
 # add codebase to docker
-COPY --chown=$MAMBA_USER:$MAMBA_USER ./ /tmp
-WORKDIR /tmp
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./ /home/mambauser
+WORKDIR /home/mambauser
