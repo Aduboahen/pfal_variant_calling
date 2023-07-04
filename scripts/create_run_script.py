@@ -10,11 +10,11 @@ from datetime import date
 
 today=date.today().strftime('%Y_%m_%d')
 
-with open("runscript_py.sh", 'w') as outfile:
+with open("run_script.sh", 'w') as outfile:
 
 	for filename in os.listdir(os.getcwd()):
 		if filename.endswith("_1.fastq"):
 			sample=filename.split('_')
 			sampleid=sample[0]
 			sample_code=sample[1]
-			outfile.write(f'nextflow run fastp.nf --sampleid {sampleid} -resume --outDir ./output --reads "{sampleid}_{{1,2}}.fastq"\n')
+			outfile.write(f'nextflow run fastp.nf --sampleid {sampleid} -resume --outDir ./output --reads "{sampleid}_{{1,2}}.fastq" -resume\n')
