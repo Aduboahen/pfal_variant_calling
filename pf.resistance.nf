@@ -4,8 +4,8 @@ nextflow.enable.dsl=1
 
 // parameters to pass to command 
 
-params.reads     = "$baseDir/test_fq/test_{1,2}.fastq.gz"
-reference        = "$baseDir/reference/Pf3D7.fasta"
+params.reads     = "$projectDir/test_fq/test_{1,2}.fastq.gz"
+reference        = "$projectDir/reference/Pf3D7.fasta"
 sampleid         = "$params.sampleid"
 params.threads   = 4 
 threads          = "$params.threads"
@@ -13,8 +13,8 @@ threads          = "$params.threads"
 
 // tools
 
-vcf2table        = "$baseDir/scripts/vcf2table.py"
-parse_stats      = "$baseDir/scripts/parse_stats.py"
+vcf2table        = "$projectDir/scripts/vcf2table.py"
+parse_stats      = "$projectDir/scripts/parse_stats.py"
 
 // filters
 
@@ -38,7 +38,7 @@ log.info"""
 P. falciparum variant calling
 
 ========Sources===============
-codeBase  : "$baseDir"
+codeBase  : "$projectDir"
 sample    : "$params.sampleid"
 reads     : "$params.reads"
 outDir    : "$params.outDir"
@@ -53,7 +53,7 @@ depth     : "$params.depth"
 
 
 =======Reference Pf3D7=======
-reference : "$baseDir/reference/Pf3D7.fasta"
+reference : "$projectDir/reference/Pf3D7.fasta"
 
 
 =======Author=======
