@@ -7,7 +7,7 @@ nextflow.enable.dsl=1
 params.reads     = "$projectDir/test_fq/test_{1,2}.fastq.gz"
 reference        = "$projectDir/reference/Pf3D7.fasta"
 sampleid         = "$params.sampleid"
-params.threads   = 4 
+params.threads   = 6 
 threads          = "$params.threads"
 
 
