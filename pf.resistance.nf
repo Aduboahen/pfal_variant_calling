@@ -2,16 +2,31 @@
 
 nextflow.enable.dsl=1
 
-// parameters to pass to command lineage
+// parameters to pass to command 
 
-params.reads       = "$baseDir/test_fq/test_{1,2}.fastq.gz"
-reference          = "$baseDir/reference/Pf3D7.fasta"
-sampleid           = "$params.sampleid"
-vcf2table          = "$baseDir/scripts/vcf2table.py"
-parse_stats        = "$baseDir/scripts/parse_stats.py"
-outDir             = "$params.outDir"
-params.threads     = 2 
-threads            = "$params.threads"
+params.reads     = "$baseDir/test_fq/test_{1,2}.fastq.gz"
+reference        = "$baseDir/reference/Pf3D7.fasta"
+sampleid         = "$params.sampleid"
+params.threads   = 4 
+threads          = "$params.threads"
+
+
+// tools
+
+vcf2table        = "$baseDir/scripts/vcf2table.py"
+parse_stats      = "$baseDir/scripts/parse_stats.py"
+
+// filters
+
+params.varqual   = 15
+varqual          = "$params.varqual" 
+params.varthres  = 0.80
+varthres         = "$params.varthres"
+params.mapqual   = 15 
+mapqual          = "$params.mapqual" 
+params.depth     = 5
+depth            = "$params.depth"
+
 // channel to get reads as tuples
 
 Channel
@@ -20,19 +35,36 @@ Channel
     .set{reads_ch}
 
 log.info"""
+P. falciparum variant calling
 
+========Sources===============
 codeBase  : "$baseDir"
 sample    : "$params.sampleid"
 reads     : "$params.reads"
 outDir    : "$params.outDir"
-reference : "$baseDir/reference/Pf3D7.fasta"
 threads   : "$params.threads"
+
+
+=======Variant filters========
+varqual   : "$params.varqual" 
+varthres  : "$params.varthres"
+mapqual   : "$params.mapqual" 
+depth     : "$params.depth"
+
+
+=======Reference Pf3D7=======
+reference : "$baseDir/reference/Pf3D7.fasta"
+
+
+=======Author=======
+James Osei-Mensa
+oseimensa@kccr.de
 """
 
 // Clean reads (adapter and read length filter)
 process 'clean reads' {
     tag '1A'
-    publishDir outDir + '/QC', mode: 'copy', pattern: "*.fastp.json"
+    publishDir outDir + '/QC', mode: 'copy', pattern: "*.fastp.*"
     input:
       set pairID, file(reads) from reads_ch
     output:
@@ -81,7 +113,7 @@ process "mark duplicates"{
     input:
       file bam from bam1A
     output:
-      file ("${sampleid}.markdup.bam") into (bamDepth, bamVar)//, bamNonCov)
+      file ("${sampleid}.markdup.bam") into bamDepth, bamVar, bamNonCov
       file ("${sampleid}.markdup.stats")
       file ("${sampleid}.markdup.bam.bai") into bam_index
     script:
@@ -92,7 +124,8 @@ process "mark duplicates"{
     """
 }
 
-// Process 2C: Genome depth
+// Genome depth with mosdepth 
+
 process 'genome depth' {
     tag '2C'
     publishDir outDir + '/QC', mode: 'copy'
@@ -115,7 +148,7 @@ process "variant calling"{
     input:
       file bam from bamVar
     output:
-      file ("${sampleid}.vcf") into vcfFilter
+      file ("${sampleid}.vcf") into vcfFilter, vcfNonCov
     script:
     """
       bcftools mpileup -a DP -B -O u -m 4 -f \
@@ -131,20 +164,19 @@ process "filter variants"{
     input:
       file vcf from vcfFilter
     output:
-      //file ("${sampleid}.filtered.vcf") into (vcfCon)//,vcfNonCov
-      file ("${sampleid}.filtered_DP.vcf") into vcfCon
+      file ("${sampleid}.filtered.vcf") into vcfCon
       file ("${sampleid}.renamed.vcf") into vcfAnnot
     script:
     """
       bcftools filter -i 'type="snp"\
-      && QUAL>=30 \
-      && FORMAT/DP>5 \
-      && MQ>=30 \
-      && DP4[2]/(DP4[2]+DP4[0])>=0.80\
-      && DP4[3]/(DP4[3]+DP4[1])>=0.80'\
+      && QUAL>=${varqual} \
+      && FORMAT/DP>${depth} \
+      && MQ>=${mapqual} \
+      && DP4[2]/(DP4[2]+DP4[0])>=${varthres}\
+      && DP4[3]/(DP4[3]+DP4[1])>=${varthres}'\
       -g10 -G10 \
       ${sampleid}.vcf \
-      -o ${sampleid}.filtered_DP.vcf
+      -o ${sampleid}.filtered.vcf
 
       sed 's/Pf3D7_01_v3/1/g;\
       s/Pf3D7_02_v3/2/g; \
@@ -168,17 +200,8 @@ process "filter variants"{
       ${sampleid}.renamed.vcf
     """
 }
-/*
-bcftools filter -i 'type="snp" \
-&& QUAL>=30 \
-&& MQ>=30 \
-&& DP4[2]/(DP4[2]+DP4[0])>=0.80\
-&& DP4[3]/(DP4[3]+DP4[1])>=0.80'\
--g10 -G10\
-${sampleid}.vcf \
--o ${sampleid}.filtered.vcf
 
-
+// non-covered regions
 
 process 'non covered regions'{
     tag '3C'
@@ -191,26 +214,26 @@ process 'non covered regions'{
     script:
     """
       bedtools genomecov -ibam ${bam} -bga | \
-      awk '\$4 < 5' | \
+      awk '\$4 < ${depth}' | \
       awk '{{print(\$1 \"\\t\" \$2 + 1 \"\\t\" \$3 \"\\tlow_coverage\")}}' |\
       bedtools subtract -a - -b ${vcf} > ${sampleid}_noncov.bed
     """
 }
-*/
+
 
 // annotate with snpEff
 
 process 'annotation'{
-    tag '4A'
+    tag '4'
     publishDir outDir + "/annotation", mode: 'copy'
     publishDir outDir + '/QC', mode: 'copy', pattern: "${sampleid}.snpEff.csv"
     input:
       file vcf from vcfAnnot
     output:
-      file ("${sampleid}.snpEff.csv")
+      file ("${sampleid}.snpEff.csv") into snpEffstats_mq
       file ("${sampleid}.summary.html")
       file ("${sampleid}.snpEff.genes.txt")
-      file ("${sampleid}.annot.table.txt")
+      file ("${sampleid}.annot.table.tsv")
       file ("${sampleid}.snpEff.ann.vcf")
     script:
     """
@@ -219,37 +242,38 @@ process 'annotation'{
       -csvStats ${sampleid}.snpEff.csv ${vcf} > ${sampleid}.snpEff.ann.vcf
 
       ${vcf2table} ${sampleid}.snpEff.ann.vcf --sample ${sampleid} -ad -e -o\
-      ${sampleid}.annot.table.txt
+      ${sampleid}.annot.table.tsv
     """
 }
 
 // Consensus calling
+
 process "consensus"{
     tag '5A'
-    publishDir outDir + "/consensus", mode: 'copy'
+    publishDir outDir + "/consensus", mode: 'copy' pattern: "*consensus.fasta"
     input:
-    	file vcf from vcfCon
-      //file noncov from noncov
+      file vcf from vcfNonCov
+      file noncov from noncov
     output:
-    	file("${sampleid}.consensus.fasta") into consensus
+      file("${sampleid}.consensus.fasta") into consensus
     script:
-      """
-    	bcftools view -O z -o ${sampleid}.vcf.gz ${vcf}
-
-    	bcftools index ${sampleid}.vcf.gz
-
-    	bcftools consensus -f ${reference}\
-      --mark-snv lc\
-      --mark-del -\
+        """
+        bcftools view -O z -o ${sampleid}.vcf.gz ${vcf}
+  
+        bcftools index ${sampleid}.vcf.gz
+  
+        bcftools consensus -f ${reference}\
+        --mark-snv lc\
+        --mark-del -\
+        --mask ${noncov}\
       ${sampleid}.vcf.gz  > ${sampleid}.consensus.fasta
 
-    	sed -i 's/>Pf3D7/>${sampleid}/;s/_v3/''/g' ${sampleid}.consensus.fasta
-    	"""
+      sed -i 's/>Pf3D7/>${sampleid}/;s/_v3/''/g' ${sampleid}.consensus.fasta
+      """
 }
 
-//--mask ${noncov}\
+// genome completeness/stats calculation
 
-  // 7B: genome completeness/stats calculation
 process 'genome_stats' {
     tag '5B'
     publishDir outDir + '/consensus', mode: 'copy'
@@ -260,6 +284,40 @@ process 'genome_stats' {
     script:
         """
         faCount ${consensus} > ${sampleid}.stats.txt
-        $parse_stats --stats ${sampleid}.stats.txt
+        ${parse_stats} --stats ${sampleid}.stats.txt
+        """
+}
+
+// multiqc
+
+process 'multiQC' {
+  tag '6A'
+  publishDir outDir + '/QC', mode: 'copy'
+  input:
+    file snpEffStats from snpEffstats_mq
+  output:reporter
+    file "*"
+    file ".command.*"
+  script:
+        """
+        multiqc ${outDir}/QC
+        """
+}
+
+// run parameters
+
+process 'run parameters' {
+    tag '7A'
+    publishDir outDir + '/parameters', mode: 'copy'
+    input:
+    output:
+        file "parameters.txt" into params
+    script:
+        """
+        touch parameters.tsv
+        echo "Parameter\tValue" >> parameters.txt
+        echo "Mutation frequency:\t>=${varthres}" >> parameters.txt
+        echo "Variant quality:\t>${varqual}" >> parameters.txt
+        echo "Minimum sequence depth:\t${depth}" >> parameters.txt
         """
 }
