@@ -1,4 +1,4 @@
-# pfal_variant_calling
+# _P._ _falciparum_ variant calling
 bcftools-based nextflow pipeline to find resistant genes in Plasmodium falciparum WGS
 
 ## clone this repo
