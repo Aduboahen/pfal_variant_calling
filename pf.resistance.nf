@@ -47,13 +47,13 @@ process 'clean reads' {
     input:
       set pairID, file(reads) from reads_ch
     output:
-      set file("${reads[0].baseName}_fastp.fastq.gz"), file("${reads[1].baseName}_fastp.fastq.gz") into fastp_2A
+      set file("${reads[0].simpleName}_fastp.fastq.gz"), file("${reads[1].simpleName}_fastp.fastq.gz") into fastp_2A
       file "${sampleid}_fastpmerged.fastq.gz" into fastpmerged_2A
       file "${sampleid}.fastp.json"
     script:
     """
       fastp -i ${reads[0]} -I ${reads[1]} \
-      -o ${reads[0].baseName}_fastp.fastq.gz -O ${reads[1].baseName}_fastp.fastq.gz \
+      -o ${reads[0].simpleName}_fastp.fastq.gz -O ${reads[1].simpleName}_fastp.fastq.gz \
       --merge --merged_out ${sampleid}_fastpmerged.fastq.gz \
       --overlap_diff_limit 0 \
       --trim_poly_x --trim_poly_g --length_required 100 --thread ${threads} --detect_adapter_for_pe\
