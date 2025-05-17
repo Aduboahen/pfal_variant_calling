@@ -2,6 +2,12 @@
 
 nextflow.enable.dsl=2
 
+// operational parameters
+
+params.outDir           = "$params.outDir"
+params.params.reads     = "$projectDir/test_fq/test_{1,2}.fastq.gz"
+params.sampleid         = "$params.sampleid"
+
 params.threads = 6
 params.reference        = "$projectDir/reference/Pf3D7.fasta"
 params.bed_file				 = "$projectDir/reference/amplicons.bed"
@@ -34,15 +40,8 @@ include { run_parameters } from './modules/run_parameters'
 
 
 workflow {
-// operational parameters
-
-outDir           = "$params.outDir"
-params.reads     = "$projectDir/test_fq/test_{1,2}.fastq.gz"
-sampleid         = "$params.sampleid"
-
 
 // channel to get reads as tuples
-
 
 reads_ch = Channel
     .fromFilePairs(params.reads)
@@ -92,6 +91,6 @@ oseimensa@kccr.de
   non_covered_regions(mark_duplicates.out.bam, variant_calling.out)
   consensus(variant_calling.out, non_covered_regions.out)
   genome_stats(consensus.out)
-  // // multiQC(annotation_indels.out)
+  // multiQC(annotation.out.snpEffstats)
   run_parameters()
 }
