@@ -1,5 +1,3 @@
-
-
 process multiQC {
   // MultiQC report generation
   // This process generates a MultiQC report from the output of various tools
