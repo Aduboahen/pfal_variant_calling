@@ -11,3 +11,11 @@ pf_test
 libjansi-64.so
 cleanup
 settings*
+input
+output
+outDir
+*.log
+*.out
+*.err
+*.json
+*.yaml
