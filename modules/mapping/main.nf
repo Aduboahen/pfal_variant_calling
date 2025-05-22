@@ -1,5 +1,6 @@
 process mapping {
     // map reads to reference and output sorted bam files
+    // for wgs
 
     tag '2'
     publishDir params.outDir + '/mapping', mode: 'copy'
@@ -24,6 +25,32 @@ process mapping {
         samtools merge ${params.sampleid}.merged.bam ${params.sampleid}.long.bam ${params.sampleid}.short.bam
 
         samtools sort ${params.sampleid}.merged.bam -@ ${params.threads} -o ${params.sampleid}.bam
+
+        samtools index ${params.sampleid}.bam > ${params.sampleid}.bam.bai
+
+        samtools stats ${params.sampleid}.bam > ${params.sampleid}.stats
+      """
+}
+
+process mapping_ampseq {
+    // map reads to reference and output sorted bam files
+    // for ampseq
+
+    tag '2'
+    publishDir params.outDir + '/mapping', mode: 'copy'
+
+    input:
+      tuple val(params.sampleid), path(reads)
+
+    output:
+      path("${params.sampleid}.bam"), emit: bam
+      path("${params.sampleid}.bam.bai"), emit: bam_index
+      path("${params.sampleid}.stats")
+
+    script:
+
+      """
+        bwa mem -t ${params.threads} ${params.reference} ${reads[0]} ${reads[1]} | samtools sort -T temp -O bam -o ${params.sampleid}.bam
 
         samtools index ${params.sampleid}.bam > ${params.sampleid}.bam.bai
 

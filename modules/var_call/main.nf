@@ -32,13 +32,10 @@ process variant_calling_ampseq{
       path(bam_index)
 
     output:
-      path("${params.sampleid}.vcf.gz")
+      path("${params.sampleid}.unfiltered.vcf.gz")
 
     script:
     """
-      bcftools mpileup -a DP -B -O u -m 4 --threads ${params.threads} -f \
-      -R ${params.bed_file} \
-      ${params.reference} ${bam}\
-      | bcftools call -mv -O z -o ${params.sampleid}.vcf.gz
+      bcftools mpileup -a DP --threads ${params.threads} -f ${params.reference} ${bam} -R ${params.bedfile} | bcftools call -mv -O z -o ${params.sampleid}.unfiltered.vcf.gz
     """
 }
