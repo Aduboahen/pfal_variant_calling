@@ -10,11 +10,11 @@ Python Version: 3.7.x
 Description:    makes more human readable tables from vcf files using vcfpy
 """
 
+from sys import stdin, stdout, stderr
+from collections import OrderedDict
+import argparse
 import re
 import vcfpy
-import argparse
-from collections import OrderedDict
-from sys import stdin, stdout, stderr, exit
 
 # GLOBALS
 # error code dict:
@@ -90,7 +90,7 @@ def vcf2table(vcfstream, sample_name, parse_annotations, exclude_so, remove_dupl
                 if parse_annotations:
                     for annotations in parse_snpeff_annotations(rec, alt, exclude_so, remove_duplicate_snpeff, HGVS_parse_regx):
                         vcfdict = get_default_vcf_parse_dict(rec, sample_name, alt_n)
-                        vcfdict["HGVS"], vcfdict["Shorthand"] = annotations
+                        vcfdict["HGVS"] = annotations # , vcfdict["Shorthand"]
                         yield vcfdict
                 else:
                     vcfdict = get_default_vcf_parse_dict(rec, sample_name, alt_n)
@@ -144,14 +144,14 @@ def parse_snpeff_annotations(rec, alt, exclude_so, remove_duplicate_snpeff, HGVS
                 if (annotation[1] not in EXCLUDE_SO_TERM_LIST and exclude_so) or not exclude_so:
                     if annotation[10]:
                         HGVS = ":".join([annotation[3], annotation[10]])
-                        Shorthand = hgvs_aasub2shorthand(HGVS, HGVS_parse_regx["aa_sub"])
+                        # Shorthand = hgvs_aasub2shorthand(HGVS, HGVS_parse_regx["aa_sub"])
                     else: 
                         # if there is no protein notation yield the DNA one
                         HGVS = ":".join([annotation[3], annotation[9]])
-                        Shorthand = "-"
+                        # Shorthand = "-"
                     if (remove_duplicate_snpeff and not HGVS in annotation_mem) or not remove_duplicate_snpeff:
                         annotation_mem.append(HGVS)
-                        yield HGVS, Shorthand
+                        yield HGVS#, Shorthand
     except Exception as snpEff_Error:
         stderr.write(f"snpEff annotation_error!\n{snpEff_Error}\nExiting\n")
         exit(ERROR_CODES["snpEff_Err"])
