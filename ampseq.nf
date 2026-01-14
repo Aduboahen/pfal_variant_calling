@@ -44,7 +44,7 @@ workflow {
   // channel to get reads as tuples
 
 
-  reads_ch = Channel.fromFilePairs(params.reads)
+  reads_ch = channel.fromFilePairs(params.reads)
     .ifEmpty { "no such files" }
 
   log.info(
@@ -77,7 +77,7 @@ oseimensa@kccr.de
   )
   // run the pipeline
 
-  reads_ch = Channel.fromFilePairs(params.reads).ifEmpty { error("No such files") }
+  reads_ch = channel.fromFilePairs(params.reads).ifEmpty { error("No such files") }
   // clean_reads(reads_ch)
   // mapping(clean_reads.out.read1, clean_reads.out.read2, clean_reads.out.merged)
   mapping_ampseq(reads_ch)
