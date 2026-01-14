@@ -14,7 +14,7 @@ COPY --chown=$MAMBA_USER:$MAMBA_USER ./modules/ /home/mambauser/modules
 
 COPY --chown=$MAMBA_USER:$MAMBA_USER ./reference/ /home/mambauser/reference
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER ./ampseq.nf ./ampseq_dsl1.nf ./BCFTOOLS_dsl1.nf ./BCFTOOLS_dsl2.nf ./GATK.nf ./nextflow.config ./ampseq_batch.sh ./wgs_batch.sh /home/mambauser/
+COPY --chown=$MAMBA_USER:$MAMBA_USER ./ampseq.nf ./ampseq_dsl1.nf ./BCFTOOLS_dsl1.nf ./BCFTOOLS_dsl2.nf ./GATK.nf ./nextflow.config ./scripts/ampseq_batch.sh ./scripts/wgs_batch.sh /home/mambauser/
 
 WORKDIR /home/mambauser
 
