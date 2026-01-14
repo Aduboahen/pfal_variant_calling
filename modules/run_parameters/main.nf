@@ -17,5 +17,6 @@ process run_parameters {
         echo "Mutation frequency:\t>=${params.varthres}" >> parameters.txt
         echo "Variant quality:\t>${params.varqual}" >> parameters.txt
         echo "Minimum sequence depth:\t${params.depth}" >> parameters.txt
+        echo "BWA seed length:\t${params.seed_length}" >> parameters.txt
         """
 }
