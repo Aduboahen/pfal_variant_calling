@@ -46,11 +46,15 @@ process mapping_ampseq {
       path("${params.sampleid}.bam"), emit: bam
       path("${params.sampleid}.bam.bai"), emit: bam_index
       path("${params.sampleid}.stats")
+    // path("${params.sampleid}.full.bam")
 
     script:
-
+      def (read1, read2) = reads
       """
-        bwa mem -t ${params.threads} ${params.reference} ${reads[0]} ${reads[1]} | samtools sort -T temp -O bam -o ${params.sampleid}.bam
+        bwa mem -t ${params.threads} ${params.reference} ${read1} ${read2} | samtools sort -T temp -O bam -o ${params.sampleid}.bam
+
+      # samtools view -L ${params.bedfile} ${params.sampleid}.full.bam #-o ${params.sampleid}.bam
+
 
         samtools index ${params.sampleid}.bam > ${params.sampleid}.bam.bai
 
