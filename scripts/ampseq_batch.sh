@@ -10,5 +10,5 @@ thread="${5:-6}"
 for file in ./input/*${suffix1}${suffix2}*; do
 	sampleid=$(basename $file ${suffix1}${suffix2})
 
-	nextflow run ${workflow} --sampleid ${sampleid} --reads ./input/"${sampleid}_{R1,R2}.fastq.gz" --outDir ./output/${today} --threads ${thread} --bedfile ./reference/amplicon_len.bed --reference ./reference/fastaseq_AmpSeq_ASAAP_Fragments_v2.fasta -resume
+	nextflow run ${workflow} --sampleid ${sampleid} --reads ./input/"${sampleid}_{R1,R2}.fastq.gz" --outDir ./output/${today} --threads ${thread} --bedfile ./reference/amplicons.bed --reference ./reference/Pf3D7.fasta -resume
 done
