@@ -34,5 +34,6 @@ process genome_depth_ampseq {
     """
       mosdepth --threads ${params.threads} ${params.sampleid} ${bam}
       samtools bedcov ${params.bedfile} ${bam} > ${params.sampleid}.basecount.tsv
+      hts_nim_tools count-reads ${params.bedfile} ${params.sampleid}.bam > ${params.sampleid}.readcount.tsv
     """
 }
