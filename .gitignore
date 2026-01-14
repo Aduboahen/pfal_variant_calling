@@ -11,8 +11,7 @@ pf_test
 libjansi-64.so
 cleanup
 settings*
-input
-output
+input/*
 outDir
 *.log
 *.out
@@ -33,3 +32,4 @@ variant_summary*
 outdated
 non_covered
 post_run.sh
+trial*/
