@@ -19,3 +19,17 @@ outDir
 *.err
 *.json
 *.yaml
+*.ipynb
+NOE*
+reference
+moimix
+*_files
+gc_*
+CNV*
+outdated
+annotation_post.sh
+coverage.nf
+variant_summary*
+outdated
+non_covered
+post_run.sh
