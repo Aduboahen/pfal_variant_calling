@@ -1,20 +1,22 @@
-process filter{
+process filter {
   // based on params.depth, quality, mapping quality and variant threshold
 
-    tag '6'
-    publishDir params.outDir + "/variants", mode: 'copy'
+  tag '6'
+  publishDir params.outDir + "/variants", mode: 'copy'
 
-    input:
-      path(vcf)
-    
-    output:
-      path("${params.sampleid}.vcf"), emit: snps
+  input:
+  path vcf
 
-    script:
-    """
+  output:
+  path ("${params.sampleid}.vcf"), emit: snps
+
+  script:
+  """
       bcftools filter -i 'QUAL>=${params.varqual} \
       && FORMAT/DP>${params.depth} \
       && MQ>=${params.mapqual} \
+      && DP4[2] > 0 \
+      && DP4[3] > 0 \
       && DP4[2]/(DP4[2]+DP4[0])>=${params.varthres}\
       && DP4[3]/(DP4[3]+DP4[1])>=${params.varthres}'\
       -g10 \
@@ -42,55 +44,57 @@ process filter{
     """
 }
 
-process filter_snps{
+process filter_snps {
   // filter snps
   // based on params.depth, quality, mapping quality and variant threshold
 
-    tag '6a'
-    publishDir params.outDir + "/variants", mode: 'copy'
+  tag '6'
+  publishDir params.outDir + "/variants", mode: 'copy'
 
-    input:
-      path(vcf)
-    
-    output:
-      path("${params.sampleid}.snps.vcf"), emit: snps
-      path("${params.sampleid}.snps.vcf.csi"), emit: snps_index
+  input:
+  path vcf
 
-    script:
-    """
-      bcftools filter -i 'type="snp"\
+  output:
+  path ("${params.sampleid}.bcftools.vcf.gz")
+
+  script:
+  """
+      bcftools filter -i 'type="snp" \
       && QUAL>=${params.varqual} \
       && FORMAT/DP>${params.depth} \
-      && (DP4[2]+DP4[3])/DP>=${params.varthres}'\
-      -g10 \
-      -O z \
-      -o ${params.sampleid}.snps.filtered.vcf ${vcf}
+      && DP4[2] > 0 \
+      && DP4[3] > 0 \
+      && DP4[2]/(DP4[2]+DP4[0])>=${params.varthres} \
+      && DP4[3]/(DP4[3]+DP4[1])>=${params.varthres}' \
+      -Oz \
+      -o ${params.sampleid}.bcftools.vcf.gz ${vcf}
 
-      bcftools index -f ${params.sampleid}.snps.vcf -o ${params.sampleid}.snps.vcf.csi
+      bcftools index -f ${params.sampleid}.bcftools.vcf.gz
     """
 }
 
-
-
-process filter_indels{
+process filter_indels {
   // filter indels 
 
-    tag '6b'
-    publishDir params.outDir + "/variants", mode: 'copy'
+  tag '6b'
+  publishDir params.outDir + "/variants", mode: 'copy'
 
-    input:
-      path(vcf)
+  input:
+  path vcf
 
-    output:
-      path("${params.sampleid}.indels.vcf"), emit: indels
-      path("${params.sampleid}.indels.vcf.csi"), emit: indels_index
+  output:
+  path ("${params.sampleid}.indels.vcf"), emit: indels
+  path ("${params.sampleid}.indels.vcf.csi"), emit: indels_index
 
-    script:
-    """
+  script:
+  """
       bcftools filter -i 'type="indel"\
       && QUAL>=${params.varqual} \
       && FORMAT/DP>${params.depth} \
-      && (DP4[2]+DP4[3])/DP>=${params.varthres}'\
+      && DP4[2] > 0 \
+      && DP4[3] > 0 \
+      && DP4[2]/(DP4[2]+DP4[0])>=${params.varthres}\
+      && DP4[3]/(DP4[3]+DP4[1])>=${params.varthres}'\
       -g10 \
       -O z \
       -o ${params.sampleid}.indels.filtered.vcf  ${vcf}
@@ -99,67 +103,46 @@ process filter_indels{
     """
 }
 
-process merge_vcf{
-    // merge snp and indel vcf files
+process merge_vcf {
+  // merge snp and indel vcf files
 
-    tag '6c'
-    publishDir params.outDir + "/variants", mode: 'copy'
+  tag '6c'
+  publishDir params.outDir + "/variants", mode: 'copy'
 
-    input:
-      path(snps)
-      path(indels)
-      path(snps_index)
-      path(indels_index)
+  input:
+  path snps
+  path indels
+  path snps_index
+  path indels_index
 
-    output:
-      path("${params.sampleid}.merged.vcf")
+  output:
+  path "${params.sampleid}.merged.vcf"
 
-    script:
-    """
+  script:
+  """
       bcftools merge --threads ${params.threads} -O z -o ${params.sampleid}.merged.vcf ${snps} ${indels}
     """
 }
-
-
-process filter_ampseq{
+process filter_lofreq {
   // based on params.depth, quality, mapping quality and variant threshold
 
-    tag '6'
-    publishDir params.outDir + "/variants", mode: 'copy'
+  tag '6'
+  publishDir params.outDir + "/variants", mode: 'copy'
 
-    input:
-      path(vcf)
-    
-    output:
-      path("${params.sampleid}.bcftools.filtered.vcf.gz")
+  input:
+  path vcf
 
-    script:
-    """
-      bcftools filter -i 'type="snp" && QUAL>=${params.varqual} \
-      && FORMAT/DP>${params.depth} \
-      && (DP4[2]+DP4[3])/DP>=${params.varthres}'\
-      -Oz -o ${params.sampleid}.bcftools.filtered.vcf.gz ${vcf}
+  output:
+  path "${params.sampleid}.lofreq.filtered.vcf.gz"
 
-      bcftools index -f ${params.sampleid}.bcftools.filtered.vcf.gz
-    """
-}
-
-
-process filter_lofreq{
-  // based on params.depth, quality, mapping quality and variant threshold
-
-    tag '6'
-    publishDir params.outDir + "/variants", mode: 'copy'
-
-    input:
-      path(vcf)
-    
-    output:
-      path("${params.sampleid}.lofreq.filtered.vcf.gz")
-
-    script:
-    """
-      lofreq filter -i ${vcf} --cov-min ${params.depth} --af-min ${params.varthres} --snvqual-thresh ${params.varqual} --no-defaults -o ${params.sampleid}.lofreq.filtered.vcf.gz
+  script:
+  """
+      lofreq filter -i ${vcf} --only-snvs --print-all \
+      --cov-min ${params.depth} \
+      --af-min ${params.varthres} \
+      --snvqual-thresh ${params.varqual} \
+      --sb-thresh ${params.strandthres} \
+      -o ${params.sampleid}.lofreq.filtered.vcf.gz
 
       bcftools index -f ${params.sampleid}.lofreq.filtered.vcf.gz
     """
