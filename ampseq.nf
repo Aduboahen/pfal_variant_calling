@@ -11,7 +11,7 @@ params.reads = "${projectDir}/test_fq/test_{1,2}.fastq.gz"
 params.sampleid = "${params.sampleid}"
 
 params.threads = 6
-params.reference = "${projectDir}/reference/3d7_amplicon.fasta"
+params.reference = "${projectDir}/reference/Pf3D7.fasta"
 params.bedfile = "${projectDir}/reference/genes.bed"
 
 // filtering parameters
