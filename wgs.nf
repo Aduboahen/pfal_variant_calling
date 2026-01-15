@@ -30,7 +30,7 @@ include { genome_depth } from './modules/genome_depth'
 include { variant_calling; variant_calling_lofreq } from './modules/var_call'
 include { filter; filter_snps; filter_indels; merge_vcf; filter_lofreq } from './modules/filter'
 include { non_covered_regions } from './modules/non_cov_reg'
-include { annotation; annotation_snps; annotation_indels; annotation_lofreq } from './modules/annotation'
+include { annotation_bcftools; annotation_snps; annotation_indels; annotation_lofreq } from './modules/annotation'
 include { consensus } from './modules/consensus'
 include { genome_stats } from './modules/genome_stats'
 include { multiQC } from './modules/multiQC'
@@ -93,6 +93,6 @@ oseimensa@kccr.de
   // consensus(variant_calling.out, non_covered_regions.out)
   consensus(variant_calling_lofreq.out, non_covered_regions.out)
   genome_stats(consensus.out)
-  multiQC(annotation.out.snpEffstats)
+  multiQC(annotation_bcftools.out.snpEffstats)
   run_parameters()
 }
