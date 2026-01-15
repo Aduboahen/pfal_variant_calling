@@ -13,8 +13,8 @@ process variant_calling{
 
     script:
     """
-      bcftools mpileup -a DP -B -O v -m 4 --threads ${params.threads} -f \
-      ${params.reference} ${bam}\
+      bcftools mpileup -a 'FORMAT/AD,FORMAT/DP' -B -O v -m 4 --threads ${params.threads} -f \
+      ${params.reference} ${bam} \
       | bcftools call -mv -O z -o ${params.sampleid}.vcf
     """
 }
@@ -36,7 +36,11 @@ process variant_calling_ampseq{
 
     script:
     """
-      bcftools mpileup -a DP --threads ${params.threads} -f ${params.reference} ${bam} -R ${params.bedfile} | bcftools call -m -V indels -O v -o ${params.sampleid}.bcftools.vcf
+      bcftools mpileup -a 'FORMAT/AD,FORMAT/DP' --skip-indels \
+      --threads ${params.threads} -f ${params.reference} ${bam} \
+      -R ${params.bedfile}\
+      | bcftools call -m -V indels \
+      -Ov -o ${params.sampleid}.bcftools.vcf
     """
 }
 
@@ -58,8 +62,9 @@ process variant_calling_ampseq{
 
     script:
     """
-      lofreq call-parallel --no-default-filter --pp-threads ${params.threads} -f ${params.reference} -o ${params.sampleid}.lofreq.vcf ${bam}
+      lofreq call-parallel --pp-threads ${params.threads} \
+      -f ${params.reference} -l ${params.bedfile} \
+      -o ${params.sampleid}.lofreq.vcf ${bam}
     """
 }
 
-// -l ${params.bedfile}
