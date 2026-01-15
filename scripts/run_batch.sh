@@ -19,7 +19,7 @@ do
     
     docker run -it --rm --mount type=bind,source=${PWD}/output,target=/tmp/output \
     --mount type=bind,source=${1},target=/tmp/input \
-   mugicrow/pfal_variant_call:latest \
+    mugicrow/pfal_variant_call:latest \
     nextflow run pf.resistance.nf --sampleid ${sample} \
     --outDir /tmp/output/${today} --threads ${thread} --reads "/tmp/input/${sample}_{1,2}${2}" -resume
 
