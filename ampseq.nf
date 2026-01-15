@@ -11,7 +11,7 @@ params.reads = "${projectDir}/test_fq/test_{1,2}.fastq.gz"
 params.sampleid = "${params.sampleid}"
 
 params.threads = 6
-params.reference = "${projectDir}/reference/Pf3D7.fasta"
+params.reference = "${projectDir}/reference/3d7_amplicon.fasta"
 params.bedfile = "${projectDir}/reference/genes.bed"
 
 // filtering parameters
@@ -78,8 +78,6 @@ oseimensa@kccr.de
   // run the pipeline
 
   reads_ch = channel.fromFilePairs(params.reads).ifEmpty { error("No such files") }
-  // clean_reads(reads_ch)
-  // mapping(clean_reads.out.read1, clean_reads.out.read2, clean_reads.out.merged)
   mapping_ampseq(reads_ch)
   genome_depth_ampseq(mapping_ampseq.out.bam, mapping_ampseq.out.bam_index)
   variant_calling_ampseq(mapping_ampseq.out.bam, mapping_ampseq.out.bam_index)
