@@ -33,3 +33,4 @@ outdated
 non_covered
 post_run.sh
 trial*/
+*.xlsx
