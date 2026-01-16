@@ -23,18 +23,18 @@ params.depth     = 5
 params.vcf2table        = "$projectDir/scripts/vcf2table.py"
 params.parse_stats      = "$projectDir/scripts/parse_stats.py"
 
-include { clean_reads } from './modules/clean_reads'
-include { mapping } from './modules/mapping'
-include { mark_duplicates } from './modules/mark_dup'
-include { genome_depth } from './modules/genome_depth'
-include { variant_calling; variant_calling_lofreq } from './modules/var_call'
-include { filter; filter_snps; filter_indels; merge_vcf; filter_lofreq } from './modules/filter'
-include { non_covered_regions } from './modules/non_cov_reg'
-include { annotation_bcftools; annotation_snps; annotation_indels; annotation_lofreq } from './modules/annotation'
-include { consensus } from './modules/consensus'
-include { genome_stats } from './modules/genome_stats'
-include { multiQC } from './modules/multiQC'
-include { run_parameters } from './modules/run_parameters'
+include { clean_reads } from '../modules/clean_reads'
+include { mapping } from '../modules/mapping'
+include { mark_duplicates } from '../modules/mark_dup'
+include { genome_depth } from '../modules/genome_depth'
+include { variant_calling; variant_calling_lofreq } from '../modules/var_call'
+include { filter; filter_snps; filter_indels; merge_vcf; filter_lofreq } from '../modules/filter'
+include { non_covered_regions } from '../modules/non_cov_reg'
+include { annotation_bcftools; annotation_snps; annotation_indels; annotation_lofreq } from '../modules/annotation'
+include { consensus } from '../modules/consensus'
+include { genome_stats } from '../modules/genome_stats'
+include { multiQC } from '../modules/multiQC'
+include { run_parameters } from '../modules/run_parameters'
 
 
 workflow {

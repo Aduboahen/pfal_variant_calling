@@ -29,13 +29,13 @@ params.seed_length = 100
 params.vcf2table = "${projectDir}/scripts/vcf2table.py"
 params.parse_stats = "${projectDir}/scripts/parse_stats.py"
 
-include { mapping_ampseq } from './modules/mapping'
-include { genome_depth_ampseq } from './modules/genome_depth'
-include { variant_calling_ampseq ; variant_calling_lofreq } from './modules/var_call'
-include { filter_snps ; filter_lofreq } from './modules/filter'
-include { annotation_bcftools ; annotation_lofreq } from './modules/annotation'
-// include { multiQC } from './modules/multiQC'
-include { run_parameters } from './modules/run_parameters'
+include { mapping_ampseq } from '../modules/mapping'
+include { genome_depth_ampseq } from '../modules/genome_depth'
+include { variant_calling_ampseq ; variant_calling_lofreq } from '../modules/var_call'
+include { filter_snps ; filter_lofreq } from '../modules/filter'
+include { annotation_bcftools ; annotation_lofreq } from '../modules/annotation'
+// include { multiQC } from '../modules/multiQC'
+include { run_parameters } from '../modules/run_parameters'
 
 workflow {
 
