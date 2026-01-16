@@ -35,7 +35,7 @@
 #!/bin/bash
 
 today=$(date +"%d-%B-%y")
-workflow="${1:-./ampseq.nf}"
+workflow="${1:-./workflows/ampseq.nf}"
 input="${2:-./input/}"
 suffix1="${3:-_R1}"
 suffix2="${4:-.fastq.gz}"
