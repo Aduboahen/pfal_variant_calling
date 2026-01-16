@@ -1,6 +1,0 @@
-pfdhfr	PF3D7_0417200	bifunctional dihydrofolate reductase-thymidylate synthase
-pfmdr1	PF3D7_0523000	multidrug resistance protein 1
-pfcrt	PF3D7_079000	chloroquine resistance transporter
-pfdhpS	PF3D7_0810800	hydroxymethyldihydropterin pyrophosphokinase-dihydropteroate synthase
-pfk13	PF3D7_1343700	kelch protein K13
-pfmdr2	PF3D7_1447900	multidrug resistance protein 2
