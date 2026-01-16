@@ -1,4 +1,3 @@
-pfal.zip
 *nextflow*
 *report*
 *timeline*
@@ -11,8 +10,8 @@ pf_test
 libjansi-64.so
 cleanup
 settings*
-input/*
-outDir
+input/
+outDir/
 *.log
 *.out
 *.err
@@ -40,3 +39,4 @@ PlasmoDB-*
 fastaseq*
 amplicons*
 GATK.nf
+read_group_extractor.sh
