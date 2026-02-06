@@ -11,7 +11,7 @@ Description:    Aggregates coverage statistics from TSV files into a multi-sheet
 import os
 import pandas as pd
 
-PATH = "/home/james/repos/github/pfal_variant_calling/output/coverage/QC/results/"
+PATH = input("Enter path to output directory: ")
 
 # %%
 reads = pd.read_csv(
