@@ -1,16 +1,16 @@
 #!/usr/bin/env nextflow
 
-nextflow.enable.dsl=2
+nextflow.enable.dsl = 2
 
 
 include { clean_reads } from '../modules/clean_reads'
 include { mapping } from '../modules/mapping'
 include { mark_duplicates } from '../modules/mark_duplicates'
 include { genome_depth } from '../modules/genome_depth'
-include { variant_calling; variant_calling_lofreq } from '../modules/variant_calling'
-include { filter; filter_snps; filter_indels; merge_vcf; filter_lofreq } from '../modules/filtering'
+include { variant_calling ; variant_calling_lofreq } from '../modules/variant_calling'
+include { filter ; filter_snps ; filter_indels ; merge_vcf ; filter_lofreq } from '../modules/filtering'
 include { non_covered_regions } from '../modules/non_covered_regions'
-include { annotation_bcftools; annotation_snps; annotation_indels; annotation_lofreq } from '../modules/annotation'
+include { annotation_bcftools ; annotation_snps ; annotation_indels ; annotation_lofreq } from '../modules/annotation'
 include { consensus } from '../modules/consensus'
 include { genome_stats } from '../modules/genome_stats'
 include { multiQC } from '../modules/multiQC'
@@ -21,13 +21,13 @@ process run_parameters {
   // This process generates a parameters file that includes the operational
   // parameters used in the workflow.
 
-    publishDir params.outDir, mode: 'copy'
+  publishDir params.outDir, mode: 'copy'
 
-    output:
-        path("parameters.txt")
+  output:
+  path "parameters.txt"
 
-    script:
-        """
+  script:
+  """
         echo "Parameter\tValue" >> parameters.txt
         echo "Mapping quality:\t>=${params.mapqual}" >> parameters.txt
         echo "Mutation frequency:\t>=${params.varthres}" >> parameters.txt
@@ -40,41 +40,42 @@ process run_parameters {
 
 workflow {
 
-// channel to get reads as tuples
+  // channel to get reads as tuples
 
-reads_ch = channel
-    .fromFilePairs(params.reads)
-    .ifEmpty{"no such files"}
+  reads_ch = channel.fromFilePairs(params.reads)
+    .ifEmpty { "no such files" }
 
-log.info"""
+  log.info(
+    """
 P. falciparum variant calling
 
 ========Sources===============
-codeBase  : $projectDir
-sample    : $params.sampleid
-reads     : $params.reads
-outDir    : $params.outDir
+codeBase  : ${projectDir}
+sample    : ${params.sampleid}
+reads     : ${params.reads}
+outDir    : ${params.outDir}
 threads   : 6
 
 
 =======Variant filters========
-varqual   : $params.varqual
-varthres  : $params.varthres
-mapqual   : $params.mapqual
-depth     : $params.depth
+varqual   : ${params.varqual}
+varthres  : ${params.varthres}
+mapqual   : ${params.mapqual}
+depth     : ${params.depth}
 
 
 =======Reference Pf3D7=======
-reference : $params.reference
+reference : ${params.reference}
 
 
 =======Author=======
 James Osei-Mensa
 oseimensa@kccr.de
 """
-// run the pipeline
-  
-  reads_ch = channel.fromFilePairs( params.reads ).ifEmpty { error "No such files" }
+  )
+  // run the pipeline
+
+  reads_ch = channel.fromFilePairs(params.reads).ifEmpty { error("No such files") }
   clean_reads(reads_ch)
   mapping(clean_reads.out.read1, clean_reads.out.read2, clean_reads.out.merged)
   mark_duplicates(mapping.out.bam)
