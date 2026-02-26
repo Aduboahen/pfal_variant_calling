@@ -5,7 +5,7 @@
 *mamba*
 *.command*
 *output*
-*work*
+scratch
 pf_test
 libjansi-64.so
 cleanup
