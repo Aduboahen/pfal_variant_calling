@@ -25,17 +25,38 @@ params.parse_stats      = "$projectDir/scripts/parse_stats.py"
 
 include { clean_reads } from '../modules/clean_reads'
 include { mapping } from '../modules/mapping'
-include { mark_duplicates } from '../modules/mark_dup'
+include { mark_duplicates } from '../modules/mark_duplicates'
 include { genome_depth } from '../modules/genome_depth'
-include { variant_calling; variant_calling_lofreq } from '../modules/var_call'
-include { filter; filter_snps; filter_indels; merge_vcf; filter_lofreq } from '../modules/filter'
-include { non_covered_regions } from '../modules/non_cov_reg'
+include { variant_calling; variant_calling_lofreq } from '../modules/variant_calling'
+include { filter; filter_snps; filter_indels; merge_vcf; filter_lofreq } from '../modules/filtering'
+include { non_covered_regions } from '../modules/non_cov_regions'
 include { annotation_bcftools; annotation_snps; annotation_indels; annotation_lofreq } from '../modules/annotation'
 include { consensus } from '../modules/consensus'
 include { genome_stats } from '../modules/genome_stats'
 include { multiQC } from '../modules/multiQC'
-include { run_parameters } from '../modules/run_parameters'
 
+
+
+process run_parameters {
+  // This process generates a parameters file that includes the operational
+  // parameters used in the workflow.
+
+    publishDir params.outDir, mode: 'copy'
+
+    output:
+        path("parameters.txt")
+
+    script:
+        """
+        echo "Parameter\tValue" >> parameters.txt
+        echo "Mapping quality:\t>=${params.mapqual}" >> parameters.txt
+        echo "Mutation frequency:\t>=${params.varthres}" >> parameters.txt
+        echo "Variant quality:\t>${params.varqual}" >> parameters.txt
+        echo "Minimum sequence depth:\t${params.depth}" >> parameters.txt
+        echo "Minimum strand bias score:\t${params.strandthres}" >> parameters.txt
+        echo "BWA seed length:\t${params.seed_length}" >> parameters.txt
+        """
+}
 
 workflow {
 
