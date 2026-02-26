@@ -15,13 +15,13 @@ process run_parameters {
   // This process generates a parameters file that includes the operational
   // parameters used in the workflow.
 
-    publishDir params.outDir, mode: 'copy'
+  publishDir params.outDir, mode: 'copy'
 
-    output:
-        path("parameters.txt")
+  output:
+  path "parameters.txt"
 
-    script:
-        """
+  script:
+  """
         touch parameters.tsv
         echo "Parameter\tValue" >> parameters.txt
         echo "Mapping quality:\t>=${params.mapqual}" >> parameters.txt
@@ -35,12 +35,6 @@ process run_parameters {
 
 
 workflow {
-
-  // channel to get reads as tuples
-
-
-  reads_ch = channel.fromFilePairs(params.reads)
-    .ifEmpty { "no such files" }
 
   log.info(
     """
