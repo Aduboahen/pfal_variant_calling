@@ -1,4 +1,4 @@
-*nextflow*
+*.nextflow*
 *report*
 *timeline*
 *nxf*
@@ -39,5 +39,5 @@ genes*
 PlasmoDB-*
 fastaseq*
 amplicons*
-GATK.nf
+GATK*
 read_group_extractor.sh
