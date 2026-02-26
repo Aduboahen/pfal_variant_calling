@@ -2,40 +2,37 @@
 
 nextflow.enable.dsl = 2
 
-// operational parameters
-
-params.outDir = "${params.outDir}"
-params.reads = "${projectDir}/test_fq/test_{1,2}.fastq.gz"
-// params.read1    = "$projectDir/test_fq/test_1.fastq.gz"
-// params.read2    = "$projectDir/test_fq/test_2.fastq.gz"
-params.sampleid = "${params.sampleid}"
-
-params.threads = 6
-params.reference = "${projectDir}/reference/Pf3D7.fasta"
-params.bedfile = "${projectDir}/reference/genes.bed"
-
-// filtering parameters
-
-params.varqual = 15
-params.varthres = 0.4
-params.strandthres = 0.05
-params.mapqual = 15
-params.depth = 5
-params.seed_length = 100
-
-
-// tools
-
-params.vcf2table = "${projectDir}/scripts/vcf2table.py"
-params.parse_stats = "${projectDir}/scripts/parse_stats.py"
 
 include { mapping_ampseq } from '../modules/mapping'
 include { genome_depth_ampseq } from '../modules/genome_depth'
-include { variant_calling_ampseq ; variant_calling_lofreq } from '../modules/var_call'
-include { filter_snps ; filter_lofreq } from '../modules/filter'
+include { variant_calling_ampseq ; variant_calling_lofreq } from '../modules/variant_calling'
+include { filter_snps ; filter_lofreq } from '../modules/filtering'
 include { annotation_bcftools ; annotation_lofreq } from '../modules/annotation'
 // include { multiQC } from '../modules/multiQC'
-include { run_parameters } from '../modules/run_parameters'
+
+
+process run_parameters {
+  // This process generates a parameters file that includes the operational
+  // parameters used in the workflow.
+
+    publishDir params.outDir, mode: 'copy'
+
+    output:
+        path("parameters.txt")
+
+    script:
+        """
+        touch parameters.tsv
+        echo "Parameter\tValue" >> parameters.txt
+        echo "Mapping quality:\t>=${params.mapqual}" >> parameters.txt
+        echo "Mutation frequency:\t>=${params.varthres}" >> parameters.txt
+        echo "Variant quality:\t>${params.varqual}" >> parameters.txt
+        echo "Minimum sequence depth:\t${params.depth}" >> parameters.txt
+        echo "Minimum strand bias score:\t${params.strandthres}" >> parameters.txt
+        echo "BWA seed length:\t${params.seed_length}" >> parameters.txt
+        """
+}
+
 
 workflow {
 
